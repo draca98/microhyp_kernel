@@ -794,7 +794,7 @@ static struct exynos_tmu_platform_data const exynos_default_tmu_data = {
 	.cal_type = TYPE_ONE_POINT_TRIMMING,
 	.efuse_value = 55,
 	.freq_tab[0] = {
-		.freq_clip_max = 800 * 1000,
+		.freq_clip_max = 1700 * 1000,
 		.temp_level = 85,
 	},
 	.freq_tab[1] = {
