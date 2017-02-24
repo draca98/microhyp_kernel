@@ -24,6 +24,9 @@
 #include <asm/cacheflush.h>
 #include <asm/smp_plat.h>
 #include <asm/smp_scu.h>
+#if 1
+#include <asm/sections.h>
+#endif
 
 #include <mach/hardware.h>
 #include <mach/regs-clock.h>
@@ -86,6 +89,20 @@ static void __cpuinit exynos_secondary_init(unsigned int cpu)
 	spin_lock(&boot_lock);
 	spin_unlock(&boot_lock);
 }
+
+#if 1
+static noinline void __invoke_hvc(uint32_t arg0, uint32_t arg1)
+{
+       __asm__ volatile(
+                       //__asmeq("%0", "r3")
+                       //__asmeq("%1", "r2")
+                       ".arch_extension virt\n"
+                       "mov r0, %0\n"
+                       "mov r1, %1\n"
+                       "hvc    #1\n"
+                       : "+r" (arg0), "+r" (arg1) : : "r0", "r1");
+}
+#endif
 
 static int __cpuinit exynos_boot_secondary(unsigned int cpu, struct task_struct *idle)
 {
@@ -155,6 +172,17 @@ static int __cpuinit exynos_boot_secondary(unsigned int cpu, struct task_struct 
 	 */
 	spin_unlock(&boot_lock);
 
+#if 1
+	{
+		/* hyp call set protect area */
+		uint32_t start, length;
+		start = __pa(_stext) & PAGE_MASK;
+		length = __pa(_etext) & PAGE_MASK;
+		length = length - start;
+
+		__invoke_hvc(start, length);
+	}
+#endif
 	return pen_release != -1 ? -ENOSYS : 0;
 }
 
